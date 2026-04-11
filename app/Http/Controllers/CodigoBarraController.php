@@ -8,59 +8,36 @@ use Illuminate\Http\Request;
 
 class CodigoBarraController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $codigos = CodigoBarra::with('producto')->where('estado', 1)->get();
+        return response()->json($codigos);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'codigoBarra' => 'required|string|max:191|unique:codigo_barras,codigoBarra',
+            'productoId'  => 'required|exists:productos,id',
+        ]);
+
+        $codigo = CodigoBarra::create([
+            'codigoBarra' => $request->codigoBarra,
+            'productoId'  => $request->productoId,
+            'estado'      => 1,
+        ]);
+
+        return response()->json($codigo, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(CodigoBarra $codigoBarra)
     {
-        //
+        return response()->json($codigoBarra->load('producto'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(CodigoBarra $codigoBarra)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, CodigoBarra $codigoBarra)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(CodigoBarra $codigoBarra)
     {
-        //
+        $codigoBarra->update(['estado' => 0]);
+        return response()->json(['message' => 'Código de barra desactivado']);
     }
 }
