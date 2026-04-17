@@ -6,22 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('detalle_ventas', function (Blueprint $table) {
             $table->id();
+            $table->integer('cantidad');
+            $table->decimal('precioUnitario', 10, 2);
+            $table->decimal('subtotal', 10, 2);
+
+            // FK hacia ventas
+            $table->bigInteger('ventaId')->unsigned();
+            $table->foreign('ventaId')->references('id')->on('ventas')->onDelete('cascade');
+
+            // FK hacia productos
+            $table->bigInteger('productoId')->unsigned();
+            $table->foreign('productoId')->references('id')->on('productos')->onDelete('cascade');
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        // Primero se elimina la tabla hija, luego la padre
         Schema::dropIfExists('detalle_ventas');
     }
 };
