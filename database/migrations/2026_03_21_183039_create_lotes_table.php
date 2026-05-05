@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('lotes', function (Blueprint $table) {
             $table->id();
+            $table->timestamp('fechaIngreso');
+            $table->string('numeroLote');
+            $table->decimal('precioCompra', 10, 2);
+            $table->decimal('precioVenta', 10, 2);
+            $table->integer('cantidadDisponible');
+            $table->integer('cantidadInicial');
+            $table->boolean('estado')->default(1); 
+            $table->unsignedBigInteger('productoId');
+            $table->foreign('productoId')->references('id')->on('productos')->onDelete('cascade');
             $table->timestamps();
         });
     }

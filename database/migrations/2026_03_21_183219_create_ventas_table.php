@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->date('fecha');
             $table->decimal('total', 10, 2);
-            $table->boolean('estado')->default(1);
+            $table->enum('estado', ['ABIERTA', 'ANULADA','PAGADA'])->default('ABIERTA');
 
             // FK hacia users (quien realiza la venta)
             $table->bigInteger('userId')->unsigned();

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('detalle_ventas', function (Blueprint $table) {
             $table->id();
+            $table->string('nombreProducto');
             $table->integer('cantidad');
             $table->decimal('precioUnitario', 10, 2);
             $table->decimal('subtotal', 10, 2);
@@ -21,6 +22,8 @@ return new class extends Migration
             // FK hacia productos
             $table->bigInteger('productoId')->unsigned();
             $table->foreign('productoId')->references('id')->on('productos')->onDelete('cascade');
+            $table->bigInteger('loteId')->unsigned();
+            $table->foreign('loteId')->references('id')->on('lotes')->onDelete('cascade');
 
             $table->timestamps();
         });
