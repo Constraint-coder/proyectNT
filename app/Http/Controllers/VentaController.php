@@ -13,7 +13,11 @@ class VentaController extends Controller
      */
     public function index()
     {
-        //
+        $ventas = Venta::with('detalles')
+            ->where('estado', 'ABIERTA')
+            ->get();
+
+        return response()->json($ventas, 200);
     }
 
     /**
@@ -21,7 +25,7 @@ class VentaController extends Controller
      */
     public function create()
     {
-        //
+        // No implementation needed for API resources.
     }
 
     /**
@@ -29,23 +33,27 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'userId' => 'required|exists:users,id',
+        ]);
+
+        $venta = Venta::create([
+            'fecha'  => now(),
+            'total'  => 0,
+            'userId' => $request->userId,
+            'estado' => 'ABIERTA',
+        ]);
+
+        return response()->json($venta, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Venta $venta)
+    public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Venta $venta)
-    {
-        //
+        $venta = Venta::with('detalles')->findOrFail($id);
+        return response()->json($venta, 200);
     }
 
     /**
@@ -53,7 +61,18 @@ class VentaController extends Controller
      */
     public function update(Request $request, Venta $venta)
     {
-        //
+        $request->validate([
+            'total' => 'required|numeric',
+        ]);
+
+        $venta->update([
+            'fecha'   => $request->fecha   ?? $venta->fecha,
+            'total'   => $request->total,
+            'userId'  => $request->userId  ?? $venta->userId,
+            'estado'  => $request->estado  ?? $venta->estado,
+        ]);
+
+        return response()->json($venta, 200);
     }
 
     /**
@@ -61,6 +80,7 @@ class VentaController extends Controller
      */
     public function destroy(Venta $venta)
     {
-        //
+        $venta->update(['estado' => 'ANULADA']);
+        return response()->json(['message' => 'Venta anulada'], 200);
     }
 }
