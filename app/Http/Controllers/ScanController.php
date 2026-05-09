@@ -26,17 +26,22 @@ class ScanController extends Controller
         try {
             DB::transaction(function () use ($producto, $cantidad, &$venta, &$total) {
 
-                $venta = Venta::firstOrCreate([
-                    'estado' => 'ABIERTA',
-                    'userId' => auth()->id()
-                ]);
+                $venta = Venta::firstOrCreate(
+                    [
+                        'estado' => 'ABIERTA',
+                        'userId' => auth()->id()
+                    ],
+                    [
+                        'fecha' => now(),
+                        'total' => 0
+                    ]
+                );
 
                 $lotes = Lote::where('productoId', $producto->id)
                     ->where('cantidadDisponible', '>', 0)
                     ->orderBy('fechaIngreso', 'asc')
                     ->lockForUpdate()
                     ->get();
-
 
                 if ($lotes->sum('cantidadDisponible') < $cantidad) {
                     throw new \Exception('Stock insuficiente');
@@ -49,24 +54,33 @@ class ScanController extends Controller
                     if ($restante <= 0) break;
 
                     $usar   = min($lote->cantidadDisponible, $restante);
-                    $precio = $producto->precioVenta; 
+                    $precio = $lote->precioVenta;
 
-                    $lote->decrement('cantidadDisponible', $usar); 
+                    $lote->decrement('cantidadDisponible', $usar);
 
-                     DetalleVenta::updateOrCreate(
-                        [
-                            'ventaId'    => $venta->id,
-                            'productoId' => $producto->id,
-                            'loteId'     => $lote->id,
-                        ],
-                        [
+                    $detalle = DetalleVenta::where('ventaId', $venta->id)
+                        ->where('productoId', $producto->id)
+                        ->where('loteId', $lote->id)
+                        ->first();
+
+                    if ($detalle) {
+                        $nuevaCantidad = $detalle->cantidad + $usar;
+                        $detalle->update([
+                            'cantidad' => $nuevaCantidad,
+                            'subtotal' => $nuevaCantidad * $precio,
+                        ]);
+                    } else {
+                        DetalleVenta::create([
+                            'ventaId'        => $venta->id,
+                            'productoId'     => $producto->id,
+                            'loteId'         => $lote->id,
                             'nombreProducto' => $producto->nombre,
                             'precioUnitario' => $precio,
                             'costoUnitario'  => $lote->costoCompra,
-                            'cantidad'       => DB::raw("cantidad + $usar"),
-                            'subtotal'       => DB::raw("(cantidad + $usar) * $precio"),
-                        ]
-                    );
+                            'cantidad'       => $usar,
+                            'subtotal'       => $usar * $precio,
+                        ]);
+                    }
 
                     $total    += $usar * $precio;
                     $restante -= $usar;
@@ -82,12 +96,12 @@ class ScanController extends Controller
         }
 
         return response()->json([
-            'venta' => $venta,
-            'total' => $total
+            'venta' => $venta->load('detalles'),
+            'total' => $venta->total
         ]);
     }
 
-    public function eliminarProducto($productoId, $ventaId)
+    public function eliminarProducto($ventaId, $productoId)
     {
         try {
             DB::transaction(function () use ($productoId, $ventaId) {
@@ -110,7 +124,6 @@ class ScanController extends Controller
                 $totalDevuelto = $detalles->sum(function ($detalle) {
                     Lote::findOrFail($detalle->loteId)
                         ->increment('cantidadDisponible', $detalle->cantidad);
-
                     return $detalle->cantidad * $detalle->precioUnitario;
                 });
 
@@ -181,8 +194,8 @@ class ScanController extends Controller
                 }
 
                 $venta->update([
-                    'estado'    => 'PAGADA',
-                    'fechaPago' => now()
+                    'estado' => 'PAGADA',
+                    'fecha'  => now()
                 ]);
             });
 

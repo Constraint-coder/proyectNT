@@ -21,10 +21,10 @@ class Rolrequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'nombre' => 'required|string|min:3|max:20',
-            'estado' => 'required|boolean',
-        ];
+    return [
+        'nombre' => 'required|string|min:3|max:20',
+        'estado' => $this->isMethod('PUT') ? 'sometimes|boolean' : 'required|boolean',
+    ];
     }
 
     /**

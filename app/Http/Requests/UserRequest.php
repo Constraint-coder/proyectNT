@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -25,10 +26,10 @@ class UserRequest extends FormRequest
     {
         return [
             'nombre' => 'required|string|min:3|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|confirmed|min:8',
+            'email'    => ['required', 'email', Rule::unique('users')->ignore($this->user->id)],
+            'password' =>  $this->isMethod('PUT') ? 'sometimes|string' : 'required|string|confirmed|min:8',
             'rolId' => 'required|integer|exists:rols,id',
-            'estado' => 'required|boolean',
+            'estado' => $this->isMethod('PUT') ? 'sometimes|boolean' : 'required|boolean',
         ];
     }
 

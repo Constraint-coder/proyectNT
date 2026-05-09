@@ -20,65 +20,57 @@ function login(Request $request)
     ]);
 
     if (!auth()->attempt($credentials)) {
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return response()->json([
+            'message' => 'Invalid credentials'
+        ], 401);
     }
 
     $user = auth()->user()->load('rol');
 
     if (!$user->estado) {
-    // Cerrar la sesión que attempt() abrió
-    auth()->logout();
-    return response()->json(['message' => 'Usuario inactivo'], 403);
-}
 
-    // ==============================
-    // ABILITIES SEGÚN ROL
-    // ==============================
+        auth()->logout();
+
+        return response()->json([
+            'message' => 'Usuario inactivo'
+        ], 403);
+    }
+
     $abilities = match($user->rol->nombre) {
-        'Administrador'  => ['*'],
-        'supervisor' => [
+
+        'Administrador' => ['*'],
+
+        'Supervisor' => [
             'productos:ver',
             'productos:crear',
-            'productos:editar',
-            'productos:eliminar',
-            'ventas:ver',
-            'lotes:ver',
-            'lotes:crear',
-            'lotes:editar',
-            'codigosbarra:ver',
-            'codigosbarra:crear',
-            'codigosbarra:editar',
-    
         ],
-        'cajero' => [
+
+        'Cajero' => [
             'scan:usar',
             'ventas:ver',
-            'ventas:cobrar',
-            'ventas:cancelar',
-            'productos:ver',
-            'detallesventa:ver',
-            'detallesventa:crear',
-            'detallesventa:editar',
-            'detallesventa:eliminar',
         ],
+
         default => ['ventas:ver'],
     };
 
-    // Eliminar tokens anteriores del usuario
-    $user->tokens()->delete();
+    // NO eliminar tokens anteriores
 
-    $token = $user->createToken('auth_token', $abilities)->plainTextToken;
+    $token = $user
+        ->createToken('auth_token', $abilities)
+        ->plainTextToken;
 
     return response()->json([
         'access_token' => $token,
-        'token_type'   => 'Bearer',
-        'user'         => [
-            'id'    => $user->id,
-            'nombre'  => $user->nombre,
+        'token_type' => 'Bearer',
+
+        'user' => [
+            'id' => $user->id,
+            'nombre' => $user->nombre,
             'email' => $user->email,
-            'rolId' => $user->rolId,
-            'rol'   => $user->rol->nombre,
-        ]
+            'rol' => $user->rol->nombre,
+        ],
+
+        'abilities' => $abilities,
     ]);
 }
 function logout(Request $request)

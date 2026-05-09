@@ -11,7 +11,7 @@ class Rol extends Model
      use HasFactory;
     protected $table = 'rols';
     //crear model
-protected $fillable = ['id', 'nombre', 'estado'];
+protected $fillable = ['nombre', 'estado'];
 public $timestamps = true;
 
 function users()
