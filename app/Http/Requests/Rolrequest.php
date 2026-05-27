@@ -14,16 +14,17 @@ class RolRequest extends FormRequest
         return true;
     }
 
+
 public function rules(): array
 {
-    $roleId = $this->route('rol')?->id;
+    $roleId = $this->route('role')?->id;
 
     return [
         'name' => [
             'required',
             'string',
             'min:3',
-            'max:20',
+            'max:255',
             Rule::unique('roles', 'name')->ignore($roleId),
         ],
         'permissions' => 'sometimes|array',

@@ -28,7 +28,11 @@ public function rules(): array
 
     return [
         'nombre'   => 'required|string|min:3|max:255',
-        'email'    => 'required|email|unique:users,email,' . $userId,
+        'email'    => [
+            'required',
+            'email',
+          Rule::unique('users', 'email')->ignore($userId),
+        ],
         'password' => $this->isMethod('POST') ? 'required|string|min:8' : 'nullable|string|min:8',
         'estado'   => 'required|boolean',
         'roles'    => 'sometimes|array',

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use app\Models\User;
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 
@@ -55,11 +55,10 @@ public function store(UserRequest $request)
             ]);
         }
 
-        // sincronizar roles
-        if (isset($validated['role'])) {
-            $user->syncRoles([$validated['role']]);
-        }
 
+            if (isset($validated['roles'])) {
+                $user->syncRoles($validated['roles']);
+            }
         return response()->json(
             $user->load('roles')
         );
