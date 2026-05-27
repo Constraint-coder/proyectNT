@@ -11,12 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rols', function (Blueprint $table) {
-            $table->id();
-            $table->string('nombre');
-            $table->boolean('estado')->default(true);
-            $table->timestamps();
-        });
+Schema::create('roles', function (Blueprint $table) {
+    $table->id();
+
+    // requerido por Spatie
+    $table->string('name');
+
+    // requerido por Spatie
+    $table->string('guard_name')->default('api');
+
+    // opcional tuyo
+    $table->boolean('estado')->default(true);
+
+    $table->timestamps();
+});
     }
 
     /**

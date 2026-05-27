@@ -2,37 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Rol;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Http\Requests\RolRequest;
+
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolController extends Controller
 {
     public function index()
     {
-       return response()->json(Rol::all());
+       $roles = Role::with('permissions')->get();
+       return response()->json($roles);
     }
 
     public function store(RolRequest $request)
     {
-        $rol = Rol::create($request->validated());
-        return response()->json($rol, 201);
+        $role = Role::create([
+            'name' => $request->name,
+            'guard_name' => 'api', 
+        ]);
+
+        if ($request->permissions) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        return response()->json($role->load('permissions'), 201);
     }
 
-    public function show(Rol $rol)
+    public function show(Role $role)
     {
-        return response()->json($rol);
+        return $role->load('permissions');
     }
 
-    public function update(RolRequest $request, Rol $rol)
+    public function update(RolRequest $request, Role $role)
     {
-        $rol->update($request->validated());
-        return response()->json($rol);
-    }
+        $role->update([
+            'name' => $request->name,
+        ]);
 
-    public function destroy(Rol $rol)
-    {
-        $rol->delete();
-        return response()->json(['message' => 'Rol eliminado']);
+        if ($request->permissions) {
+            $role->syncPermissions($request->permissions);
+        }
+
+        return $role->load('permissions');
     }
+public function destroy(Role $role)
+{
+    $role->delete();
+
+    return response()->json(['message' => 'Rol eliminado']);
+}
 }

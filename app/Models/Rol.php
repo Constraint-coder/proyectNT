@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Rol extends Model
 {
      use HasFactory;
-    protected $table = 'rols';
+    protected $table = 'roles';
     //crear model
 protected $fillable = ['nombre', 'estado'];
 public $timestamps = true;

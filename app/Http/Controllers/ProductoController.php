@@ -10,7 +10,7 @@ class ProductoController extends Controller
 {
     public function index()
     {
-        $productos = Producto::where('estado', 1)->get();
+        $productos = Producto::all();
         return response()->json($productos);
     }
 
@@ -18,11 +18,12 @@ class ProductoController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:191',
+            'estado'=>'required|numeric'
         ]);
 
         $producto = Producto::create([
             'nombre' => $request->nombre,
-            'estado' => 1,
+            'estado' => $request->estado,
         ]);
 
         return response()->json($producto, 201);
@@ -37,10 +38,12 @@ class ProductoController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:191',
+            'estado'=>'required|boolean'
         ]);
 
         $producto->update([
             'nombre' => $request->nombre,
+            'estado' => $request->estado
         ]);
 
         return response()->json($producto);
