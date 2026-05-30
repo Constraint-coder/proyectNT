@@ -10,7 +10,8 @@ class LoteController extends Controller
     public function index()
     {
         $lotes = Lote::where('estado', 1)
-            ->orderBy('fechaIngreso', 'asc') // 🔥 FIFO real
+            ->orderBy('fechaIngreso', 'asc')
+            ->with('productos')
             ->get();
 
         return response()->json($lotes, 200);
@@ -51,7 +52,7 @@ class LoteController extends Controller
 
     public function show($id)
     {
-        $lote = Lote::findOrFail($id);
+        $lote = Lote::findOrFail($id)->load('productos');
         return response()->json($lote, 200);
     }
 

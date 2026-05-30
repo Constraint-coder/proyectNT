@@ -35,9 +35,10 @@ class CodigoBarraController extends Controller
         return response()->json($codigoBarra->load('producto'));
     }
 
-    public function destroy(CodigoBarra $codigoBarra)
-    {
-        $codigoBarra->update(['estado' => 0]);
+    public function destroy($codigoBarra)
+
+    {   $codigo = CodigoBarra::findOrFail($codigoBarra);
+        $codigo->delete();
         return response()->json(['message' => 'Código de barra desactivado']);
     }
 }
