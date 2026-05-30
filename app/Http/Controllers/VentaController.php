@@ -13,7 +13,7 @@ class VentaController extends Controller
 {
     public function index()
     {
-        $ventas = Venta::with('detalles')->get();
+        $ventas = Venta::with('detalles','user')->get();
         return response()->json($ventas, 200);
     }
 

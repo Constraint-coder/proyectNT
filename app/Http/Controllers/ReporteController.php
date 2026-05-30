@@ -24,7 +24,7 @@ class ReporteController extends Controller
                 COUNT(*) as totalVentas,
                 SUM(total) as ingresos
             ")
-            ->where('estado', 'FINALIZADA')
+            ->where('estado', 'PAGADA')
             ->whereYear('fecha', $anio)
             ->groupByRaw('EXTRACT(MONTH FROM fecha)')
             ->orderByRaw('EXTRACT(MONTH FROM fecha)')
